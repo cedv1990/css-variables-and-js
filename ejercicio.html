@@ -12,8 +12,101 @@
 <body>
     <!--Your HTML code here-->
 
+    <form>
+        <fieldset>
+            <legend>Formulario de registro</legend>
+            <div>
+                <input type="text" required="required" placeholder="Nombre" data-name="nombre" />
+            </div>
+            <div>
+                <input type="text" required="required" placeholder="Apellidos" data-name="apellidos" />
+            </div>
+            <div>
+                <select required="required" data-name="tipoId">
+                    <option value="">--Tipo de identificación--</option>
+                    <option value="CC">Cédula de ciudadanía</option>
+                    <option value="CE">Cédula de extranjería</option>
+                    <option value="TI">Tarjeta de indentidad</option>
+                </select>
+            </div>
+            <div>
+                <input type="number" required="required" placeholder="Número de identificación" data-name="numeroId" />
+            </div>
+            <div>
+                <input type="date" required="required" placeholder="Fecha de nacimiento" data-name="fecha" />
+            </div>
+            <div>
+                <select data-name="familiar">
+                    <option value="">--Seleccione el familiar--</option>
+                </select>
+            </div>
+            <div>
+                <select data-name="parentesco">
+                    <option value="">--Seleccione el parentesco--</option>
+                    <option value="son">Padre/Madre</option>
+                    <option value="grandson">Abuelo/Abuela</option>
+                </select>
+            </div>
+            <div>
+                <button>
+                    Agregar
+                </button>
+            </div>
+        </fieldset>
+    </form>
+
+    <section>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Tipo Id.</th>
+                    <th>No. Id.</th>
+                    <th>Fecha Nacimiento</th>
+                    <th>[x]</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
     <script>
         /*Your javascript code here*/
+
+        const datos = [];
+
+        const formulario = document.querySelector('form');
+        const controles = document.querySelectorAll('[data-name]');
+        const familiares = document.querySelector('[data-name=familiar]');
+
+        formulario.addEventListener('submit', e => { e.stopPropagation();e.preventDefault();});
+        
+        document.querySelector('button').addEventListener('click', () => {
+            if (formulario.checkValidity()) {
+                agregarRegistro();
+            }
+        });
+
+        const agregarRegistro = () => {
+            const datoNuevo = {};
+
+            controles.forEach(c => datoNuevo[c.dataset.name] = c.value || null);
+
+            datos.push(datoNuevo);
+
+            agregarFamiliar(datoNuevo);
+
+            formulario.reset();
+        };
+
+        const agregarFamiliar = dato => {
+            const option = document.createElement('option');
+            option.value = dato.numeroId;
+            option.innerHTML = `${dato.nombre} ${dato.apellidos}`;
+            familiares.appendChild(option);
+        };
+
     </script>
 </body>
 </html>
