@@ -7,6 +7,56 @@
     <title>Mi página</title>
     <style>
         /*Your styles code here*/
+        * {
+            font-family: Segoe UI;
+            font-size: 15px;
+        }
+
+        body {
+            background-color: #000;
+        }
+
+        form {
+            background: #1d1d1d;
+            padding: 25px;
+        }
+
+        form > fieldset {
+
+        }
+
+        form > fieldset > div {
+
+        }
+
+        input, button, select {
+
+        }
+
+        section {
+
+        }
+
+        section > table {
+
+        }
+
+        section > table > thead {
+            
+        }
+
+        section > table > tbody > tr {
+            
+        }
+
+        section > table th {
+            
+        }
+
+        section > table td {
+            
+        }
+
     </style>
 </head>
 <body>
@@ -41,11 +91,7 @@
                 </select>
             </div>
             <div>
-                <select data-name="parentesco">
-                    <option value="">--Seleccione el parentesco--</option>
-                    <option value="son">Padre/Madre</option>
-                    <option value="grandson">Abuelo/Abuela</option>
-                </select>
+                <input type="color" required="required" placeholder="Color de familiar" data-name="color" />
             </div>
             <div>
                 <button>
@@ -74,19 +120,40 @@
     <script>
         /*Your javascript code here*/
 
-        const datos = [];
+        let datos = [];
 
         const formulario = document.querySelector('form');
         const controles = document.querySelectorAll('[data-name]');
         const familiares = document.querySelector('[data-name=familiar]');
+        const numero = document.querySelector('[data-name=numeroId]');
+        const color = document.querySelector('[data-name=color]');
+        const tabla = document.querySelector('table > tbody');
 
-        formulario.addEventListener('submit', e => { e.stopPropagation();e.preventDefault();});
-        
-        document.querySelector('button').addEventListener('click', () => {
-            if (formulario.checkValidity()) {
-                agregarRegistro();
+        formulario.addEventListener('submit', e => {e.preventDefault();e.stopPropagation();});
+        familiares.addEventListener('change', () => {
+            if (familiares.value !== ''){
+                color.setAttribute('disabled', 'disabled');
+            }
+            else{
+                color.removeAttribute('disabled');
             }
         });
+        
+        document.querySelector('button').addEventListener('click', e => {
+            if (formulario.checkValidity()) {
+                if (validarIdentificacion()){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    agregarRegistro();
+                }
+                else{
+                    alert('El número de identificación ya existe!');
+                    numero.focus();
+                }
+            }
+        });
+
+        const validarIdentificacion = () => datos.every(d => d.numeroId !== numero.value);
 
         const agregarRegistro = () => {
             const datoNuevo = {};
@@ -97,14 +164,79 @@
 
             agregarFamiliar(datoNuevo);
 
+            agregarFilaTabla(datoNuevo);
+
             formulario.reset();
+            color.removeAttribute('disabled');
+            controles[0].focus();
         };
 
         const agregarFamiliar = dato => {
-            const option = document.createElement('option');
-            option.value = dato.numeroId;
-            option.innerHTML = `${dato.nombre} ${dato.apellidos}`;
-            familiares.appendChild(option);
+            if (!dato.familiar) {
+                const option = document.createElement('option');
+                option.value = dato.numeroId;
+                option.innerHTML = `${dato.nombre} ${dato.apellidos}`;
+                familiares.appendChild(option);
+            }
+        };
+
+        const agregarFilaTabla = dato => {
+            const tr = document.createElement('tr');
+            let color = dato.familiar;
+            if (!dato.familiar) {
+                tabla.style.setProperty(`--bgcolor-${dato.numeroId}`, dato.color);
+                color = dato.numeroId;
+            }
+            tr.style.setProperty('background-color', `var(--bgcolor-${color})`);
+            let td = document.createElement('td');
+            td.appendChild(document.createTextNode(dato.nombre));
+            tr.appendChild(td);
+            td = document.createElement('td');
+            td.appendChild(document.createTextNode(dato.apellidos));
+            tr.appendChild(td);
+            td = document.createElement('td');
+            td.appendChild(document.createTextNode(dato.tipoId));
+            tr.appendChild(td);
+            td = document.createElement('td');
+            td.appendChild(document.createTextNode(dato.numeroId));
+            tr.appendChild(td);
+            td = document.createElement('td');
+            td.appendChild(document.createTextNode(dato.fecha));
+            tr.appendChild(td);
+            td = document.createElement('td');
+            
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.dataset.id = dato.numeroId;
+            chk.addEventListener('click', function() {
+                if (confirm('Está seguro que desea borrar el registro?')) {
+                    borrarFila(this.dataset.id, this.dataset.familiar);
+                }
+                else{
+                    this.checked = false;
+                }
+            });
+            td.appendChild(chk);
+            tr.appendChild(td);
+
+            tr.dataset.id = dato.numeroId;
+            if (dato.familiar) {
+                tr.dataset.familiar = dato.familiar;
+                chk.dataset.familiar = dato.familiar;
+            }
+
+            tabla.appendChild(tr);
+        };
+
+        const borrarFila = (id, fam) => {
+            let selector = `tr[data-id="${id}"]`;
+            if (!fam) {
+                selector += `, tr[data-familiar="${id}"]`;
+            }
+            document.querySelectorAll(selector).forEach(x => {
+                datos = datos.filter(d => d.numeroId !== id && d.familiar !== id);
+                x.remove();
+            });
         };
 
     </script>
